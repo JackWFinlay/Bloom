@@ -7,43 +7,49 @@ namespace Bloom
 {
     public class BloomFilter : IBloomFilter
     {
-        private const int _numBytesInInt64 = 8;
-        public readonly long Size;
-        public readonly bool[] Filter;
+        private const int NumBytesInInt64 = 8;
+        private readonly long _size;
+        private readonly bool[] _filter;
 
-        public readonly List<Type> HashAlgorithms;
+        public long Size => _size;
+
+        public bool[] Filter => _filter;
+
+        public List<Type> HashAlgorithms => _hashAlgorithms;
+
+        private readonly List<Type> _hashAlgorithms;
 
         public BloomFilter()
         {
-            Size = BloomConfiguration.DefaultBloomFilterSize;
-            HashAlgorithms = BloomConfiguration.DefaultHashAlgorithms;
-            Filter = new bool[Size];
+            _size = BloomConfiguration.DefaultBloomFilterSize;
+            _hashAlgorithms = BloomConfiguration.DefaultHashAlgorithms;
+            _filter = new bool[_size];
         }
 
         public BloomFilter(BloomConfiguration configuration)
         {
-            Size = configuration.BloomFilterSize;
-            HashAlgorithms = configuration.HashAlgorithms;
-            Filter = new bool[Size];
+            _size = configuration.BloomFilterSize;
+            _hashAlgorithms = configuration.HashAlgorithms;
+            _filter = new bool[_size];
         }
 
-        public void Add(byte[] item)
+        public virtual void Add(byte[] item)
         {
-            List<long> listOfIndexes = GetIndexesOfHashResults(item);
+            IEnumerable<long> listOfIndexes = GetIndexesOfHashResults(item);
             foreach (long index in listOfIndexes)
             {
-                Filter[index] = true;
+                _filter[index] = true;
             }
         }
 
-        public bool Contains(byte[] item)
+        public virtual bool Contains(byte[] item)
         {
-            List<long> listOfIndexes = GetIndexesOfHashResults(item);
+            IEnumerable<long> listOfIndexes = GetIndexesOfHashResults(item);
             bool containsAll = true;
 
             foreach (long index in listOfIndexes)
             {
-                if (!Filter[index])
+                if (!_filter[index])
                 {
                     containsAll = false;
                     break;
@@ -53,11 +59,11 @@ namespace Bloom
             return containsAll;
         }
 
-        private List<long> GetIndexesOfHashResults(byte[] item)
+        private IEnumerable<long> GetIndexesOfHashResults(byte[] item)
         {
             List<long> listOfIndexes = new List<long>();
 
-            foreach (Type algorithmType in HashAlgorithms)
+            foreach (Type algorithmType in _hashAlgorithms)
             {
                 HashAlgorithm hashAlgorithm = (HashAlgorithm)Activator.CreateInstance(algorithmType);
 
@@ -79,20 +85,20 @@ namespace Bloom
             return indexWithinBounds;
         }
 
-        private long GetLongFromByteArray(byte[] byteArray)
+        private static long GetLongFromByteArray(byte[] byteArray)
         {
             long result = 0;
             bool lastBytes = false;
 
-            for (int i = 0; i < byteArray.Length; i += _numBytesInInt64)
+            for (int i = 0; i < byteArray.Length; i += NumBytesInInt64)
             {
-                int numberOfBytesToTake = _numBytesInInt64;
-                byte[] eightBytes = new byte[_numBytesInInt64];
+                int numberOfBytesToTake = NumBytesInInt64;
+                byte[] eightBytes = new byte[NumBytesInInt64];
 
 
-                if ((i + _numBytesInInt64) > byteArray.Length)
+                if ((i + NumBytesInInt64) > byteArray.Length)
                 {
-                    numberOfBytesToTake = _numBytesInInt64 - Math.Abs(i - byteArray.Length) - 1;
+                    numberOfBytesToTake = NumBytesInInt64 - Math.Abs(i - byteArray.Length) - 1;
                     lastBytes = true;
                 }
 
@@ -114,7 +120,7 @@ namespace Bloom
 
         private long ReduceLongToBoundsOfFilter(long byteArrayAsCompactedLong)
         {
-            return byteArrayAsCompactedLong % Size;
+            return byteArrayAsCompactedLong % _size;
         }
     }
 }

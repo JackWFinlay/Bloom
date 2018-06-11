@@ -5,17 +5,18 @@ using System.Text;
 using Bloom.Configuration;
 using System.Security.Cryptography;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit.Abstractions;
 
 namespace BloomTest
 {
     public class BloomTests
     {
-        private readonly ITestOutputHelper output;
+        private readonly ITestOutputHelper _output;
 
         public BloomTests(ITestOutputHelper output)
         {
-            this.output = output;
+            _output = output;
         }
 
         [Fact]
@@ -73,8 +74,8 @@ namespace BloomTest
             string testString = $"TestString";
             byte[] testByteArray1 = Encoding.ASCII.GetBytes(testString);
 
-            string TestString2 = $"TestString2";
-            byte[] testByteArray2 = Encoding.ASCII.GetBytes(TestString2);
+            string testString2 = $"TestString2";
+            byte[] testByteArray2 = Encoding.ASCII.GetBytes(testString2);
 
             bloomFilter.Add(testByteArray1);
             bloomFilter.Add(testByteArray2);
@@ -106,50 +107,45 @@ namespace BloomTest
             string testString = $"TestString";
             byte[] testByteArray1 = Encoding.ASCII.GetBytes(testString);
 
-            string TestString2 = $"TestString2";
-            byte[] testByteArray2 = Encoding.ASCII.GetBytes(TestString2);
+            string testString2 = $"TestString2";
+            byte[] testByteArray2 = Encoding.ASCII.GetBytes(testString2);
 
             bloomFilter.Add(testByteArray1);
             bloomFilter.Add(testByteArray2);
 
             bool[] actual = bloomFilter.Filter;
 
-            foreach(bool flag in actual)
-            {
-                output.WriteLine($"{flag},");
-            }
+            PrintFilterResults(actual);
 
-            bool[] expected = {true,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,
-            false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,false,false,false,false,
-            false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,
-            true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,
-            false,false,false,true,false,false,false,false,false,false,false,true,true,false,false,false,false,false,false,
-            false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,
-            false,false,true,false,false,false,false,false,true,false,false,true,false,false,false,false};
+            bool[] expected = { true,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,
+                                false,false,false,false,false,false,false,false,false,false,false,false,false,true,false,false,false,false,
+                                false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,
+                                false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,
+                                false,false,false,false,false,true,false,false,false,false,false,false,false,true,true,false,false,false,
+                                false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,
+                                false,false,false,false,false,false,true,false,false,false,false,false,true,false,false,true,false,false,false,
+                                false };
 
             Assert.True(CompareBoolArrays(expected, actual));
             Assert.True(bloomFilter.Contains(testByteArray1));
             Assert.True(bloomFilter.Contains(testByteArray2));
         }
 
-        private bool CompareBoolArrays(bool[] expected, bool[] actual)
+        private void PrintFilterResults(bool[] actual)
         {
-            bool match = true;
+            foreach (bool flag in actual)
+            {
+                _output.WriteLine($"{flag},");
+            }
+        }
 
+        private static bool CompareBoolArrays(bool[] expected, bool[] actual)
+        {
             if (expected.Length != actual.Length){
                 return false;
             }
 
-            for (int i = 0; i < expected.Length; i++)
-            {
-                if (expected[i] != actual[i])
-                {
-                    match = false;
-                    break;
-                }
-            }
-
-            return match;
+            return !expected.Where((t, i) => t != actual[i]).Any();
         }
     }
 }
