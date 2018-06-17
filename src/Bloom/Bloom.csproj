@@ -3,5 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
+  <PropertyGroup>
+    <PackageId>Bloom</PackageId>
+    <Version>0.0.1</Version>
+    <Authors>Jack Witbrock Finlay</Authors>
+    <Description>A simple Bloom Filter implementation for .NET Standard 2.0.</Description>
+    <RepositoryUrl>https://github.com/JackWFinlay/Bloom</RepositoryUrl>
+    <Copyright>Jack Witbrock Finlay 2018</Copyright>
+  </PropertyGroup>
 </Project>
