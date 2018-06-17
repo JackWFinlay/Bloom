@@ -95,13 +95,14 @@ namespace Bloom
                 int numberOfBytesToTake = NumBytesInInt64;
                 byte[] eightBytes = new byte[NumBytesInInt64];
 
-
+                // Only grab the last bytes in the array.
                 if ((i + NumBytesInInt64) > byteArray.Length)
                 {
                     numberOfBytesToTake = NumBytesInInt64 - Math.Abs(i - byteArray.Length) - 1;
                     lastBytes = true;
                 }
-
+                
+                // Fill the smaller byte array with values from the main one.
                 for (int j = 0; j < numberOfBytesToTake; j++)
                 {
                     eightBytes[j] = byteArray[i + j];
